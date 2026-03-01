@@ -22,7 +22,7 @@ services:
     depends_on:
       - php
       - phpmyadmin
-      
+
   varnish:
     image: varnish:stable
     depends_on:
@@ -30,7 +30,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./varnish/default.vcl:/etc/varnish/default.vcl
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
 
   mariadb:
     image: mariadb:10.11
