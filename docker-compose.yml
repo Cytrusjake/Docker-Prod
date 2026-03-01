@@ -12,10 +12,10 @@ services:
       - memcached
 
   nginx:
-    image: nginx:stable
+    build:
+      context: ./nginx
     volumes:
       - app:/var/www/html
-      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - nginx_user_snippets:/etc/nginx/user-snippets
     environment:
       PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required}
@@ -24,13 +24,12 @@ services:
       - phpmyadmin
 
   varnish:
-    image: varnish:stable
+    build:
+      context: ./varnish
     depends_on:
       - nginx
     ports:
       - "8081:80"
-    volumes:
-      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
 
   mariadb:
     image: mariadb:10.11
@@ -56,7 +55,6 @@ services:
       PMA_HOST: mariadb
       PMA_PORT: 3306
       UPLOAD_LIMIT: 256M
-    # IMPORTANT: no ports here (internal only)
 
 volumes:
   app:
