@@ -4,9 +4,8 @@ services:
   php:
     build: .
     volumes:
-      # Host webroot mounted into container
       - /var/www/html:/var/www/html
-      - php_user_ini:/usr/local/etc/php/conf.d
+      - /etc/tenant-php/conf.d:/usr/local/etc/php/conf.d:ro
     depends_on:
       - mariadb
       - redis
@@ -16,9 +15,8 @@ services:
     build:
       context: ./nginx
     volumes:
-      # Same host webroot mounted into nginx
       - /var/www/html:/var/www/html:ro
-      - nginx_user_snippets:/etc/nginx/user-snippets
+      - /etc/tenant-nginx/user-snippets:/etc/nginx/user-snippets
     environment:
       PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required}
     depends_on:
@@ -41,7 +39,6 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      # Host DB directory mounted into container
       - /var/lib/mysql:/var/lib/mysql
 
   redis:
@@ -58,7 +55,7 @@ services:
       PMA_HOST: mariadb
       PMA_PORT: 3306
       UPLOAD_LIMIT: 256M
+      ports:
+        - "8090:80"
+  restart: unless-stopped
 
-volumes:
-  php_user_ini:
-  nginx_user_snippets:
