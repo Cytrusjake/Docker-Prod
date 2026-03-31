@@ -55,7 +55,7 @@ services:
       PMA_HOST: mariadb
       PMA_PORT: 3306
       UPLOAD_LIMIT: 256M
-      ports:
-        - "8090:80"
-  restart: unless-stopped
+    ports:
+       - "8090:80"
+    restart: unless-stopped
 
