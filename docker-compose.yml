@@ -10,6 +10,7 @@ services:
       - mariadb
       - redis
       - memcached
+    restart: unless-stopped
 
   nginx:
     build:
@@ -21,7 +22,9 @@ services:
       PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required}
     depends_on:
       - php
-      - phpmyadmin
+    expose:
+      - "80"
+    restart: unless-stopped
 
   varnish:
     build:
@@ -30,6 +33,7 @@ services:
       - nginx
     ports:
       - "8081:80"
+    restart: unless-stopped
 
   mariadb:
     image: mariadb:10.11
@@ -40,12 +44,15 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - /var/lib/mysql:/var/lib/mysql
+    restart: unless-stopped
 
   redis:
     image: redis:7
+    restart: unless-stopped
 
   memcached:
     image: memcached:latest
+    restart: unless-stopped
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2
@@ -56,6 +63,5 @@ services:
       PMA_PORT: 3306
       UPLOAD_LIMIT: 256M
     ports:
-       - "8090:80"
+      - "8090:80"
     restart: unless-stopped
-
