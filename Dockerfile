@@ -2,7 +2,10 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www/html
 
-# Install system dependencies (HEIC support added)
+# Force cache bust 
+RUN echo "BUILD $(date)"
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -18,25 +21,25 @@ RUN apt-get update && apt-get install -y \
     git \
     curl
 
-# Configure and install PHP extensions
+# Install MySQL extensions FIRST and separately
+RUN docker-php-ext-install pdo_mysql mysqli
+
+# HARD FAIL if not installed
+RUN php -m | grep -i mysql
+
+# Install remaining extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         intl \
-        pdo \
-        pdo_mysql \
-        mysqli \
         zip \
         gd \
         opcache
 
 RUN docker-php-ext-enable opcache
 
-# Install Imagick AFTER HEIC libs are present
+# Install Imagick AFTER deps
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
-
-# Verify MySQL extensions
-RUN php -m | grep -i mysql
 
 # Cleanup
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
