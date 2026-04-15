@@ -36,11 +36,14 @@ RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
 # Install IonCube (robust path handling)
-RUN curl -fsSL https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
-    | tar xz \
+RUN curl -fsSL https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz -o ioncube.tar.gz \
+    && tar -xzf ioncube.tar.gz \
     && EXT_DIR=$(php -i | grep extension_dir | awk '{print $3}') \
-    && mv ioncube/ioncube_loader_lin_8.2.so $EXT_DIR \
-    && echo "zend_extension=ioncube_loader_lin_8.2.so" > /usr/local/etc/php/conf.d/00-ioncube.ini
+    && ls -la ioncube \
+    && test -f ioncube/ioncube_loader_lin_8.2.so \
+    && cp ioncube/ioncube_loader_lin_8.2.so $EXT_DIR \
+    && echo "zend_extension=ioncube_loader_lin_8.2.so" > /usr/local/etc/php/conf.d/00-ioncube.ini \
+    && rm -rf ioncube ioncube.tar.gz
 
 # Force build to fail if MySQL extensions are missing
 RUN php -m | grep -i mysql
