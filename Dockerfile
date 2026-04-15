@@ -1,6 +1,9 @@
 FROM php:8.2-fpm
 
-# System deps
+# Set working directory
+WORKDIR /var/www/html
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -9,11 +12,12 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libmagickwand-dev \
     libonig-dev \
+    libxml2-dev \
     unzip \
     git \
     curl
 
-# PHP extensions
+# Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         intl \
@@ -21,20 +25,26 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         pdo_mysql \
         mysqli \
         zip \
-        gd
+        gd \
+        opcache
 
-# Imagick
+# Enable opcache explicitly
+RUN docker-php-ext-enable opcache
+
+# Install Imagick
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
-# Opcache
-RUN docker-php-ext-install opcache
-
-# IonCube (example, adjust version if needed)
+# Install IonCube (robust path handling)
 RUN curl -fsSL https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
     | tar xz \
-    && mv ioncube/ioncube_loader_lin_8.2.so /usr/local/lib/php/extensions/no-debug-non-zts-*/ \
+    && EXT_DIR=$(php -i | grep extension_dir | awk '{print $3}') \
+    && mv ioncube/ioncube_loader_lin_8.2.so $EXT_DIR \
     && echo "zend_extension=ioncube_loader_lin_8.2.so" > /usr/local/etc/php/conf.d/00-ioncube.ini
 
-# Clean
+# Force build to fail if MySQL extensions are missing
+RUN php -m | grep -i mysql
+
+
+# Cleanup
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
