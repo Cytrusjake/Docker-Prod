@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
   php:
-    build:
       image: ghcr.io/cytrusjake/php-8_2:latest
     volumes:
       - /var/www/html:/var/www/html
