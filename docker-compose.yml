@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   php:
-    build: .
+    build:
+      image: ghcr.io/cytrusjake/php-8_2:latest
     volumes:
       - /var/www/html:/var/www/html
       # Mount a single custom ini instead of overriding the whole directory
