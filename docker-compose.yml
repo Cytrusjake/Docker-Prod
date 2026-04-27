@@ -1,54 +1,63 @@
-ersion: '3.9'
+version: "3.9"
+
 services:
   php:
-    build: .
+    image: ghcr.io/cytrusjake/php-8_2:latest
+    
     volumes:
-      - '/var/www/html:/var/www/html'
-      - '/etc/tenant-php/custom.ini:/usr/local/etc/php/conf.d/zzz-custom.ini:ro'
+      - /var/www/html:/var/www/html
+      # Mount a single custom ini instead of overriding the whole directory
+      - /etc/tenant-php/custom.ini:/usr/local/etc/php/conf.d/zzz-custom.ini:ro
     depends_on:
       - mariadb
       - redis
       - memcached
     restart: unless-stopped
+
   nginx:
     build:
       context: ./nginx
     volumes:
-      - '/var/www/html:/var/www/html:ro'
-      - '/etc/tenant-nginx/user-snippets:/etc/nginx/user-snippets'
+      - /var/www/html:/var/www/html:ro
+      - /etc/tenant-nginx/user-snippets:/etc/nginx/user-snippets
     environment:
-      PUBLIC_DOMAIN: '${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required}'
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required}
     depends_on:
       - php
     expose:
-      - '80'
+      - "80"
     restart: unless-stopped
+
   varnish:
     build:
       context: ./varnish
     depends_on:
       - nginx
     ports:
-      - '8081:80'
+      - "8081:80"
     restart: unless-stopped
+
   mariadb:
-    image: 'mariadb:10.11'
+    image: mariadb:10.11
     environment:
-      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-      MYSQL_DATABASE: '${MYSQL_DATABASE}'
-      MYSQL_USER: '${MYSQL_USER}'
-      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - '/var/lib/mysql:/var/lib/mysql'
+      - /var/lib/mysql:/var/lib/mysql
     restart: unless-stopped
+
   redis:
-    image: 'redis:7'
+    image: redis:7
     restart: unless-stopped
+
   memcached:
-    image: 'memcached:latest'
+    image: memcached:latest
     restart: unless-stopped
+
   phpmyadmin:
-    image: 'phpmyadmin/phpmyadmin:5.2'
+    image: phpmyadmin/phpmyadmin:5.2
     depends_on:
       - mariadb
     environment:
@@ -56,5 +65,5 @@ services:
       PMA_PORT: 3306
       UPLOAD_LIMIT: 256M
     ports:
-      - '8090:80'
+      - "8090:80"
     restart: unless-stopped
