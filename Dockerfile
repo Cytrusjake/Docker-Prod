@@ -2,8 +2,11 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www/html
 
-# Install system dependencies (with retry + cleanup in same layer)
-RUN apt-get update -o Acquire::Retries=3 && apt-get install -y \
+# Force cache bust 
+RUN echo "BUILD $(date)"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
     libpng-dev \
@@ -16,14 +19,15 @@ RUN apt-get update -o Acquire::Retries=3 && apt-get install -y \
     libxml2-dev \
     unzip \
     git \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    curl
 
-# Install MySQL extensions first
-RUN docker-php-ext-install pdo_mysql mysqli \
-    && php -m | grep -i mysql
+# Install MySQL extensions FIRST and separately
+RUN docker-php-ext-install pdo_mysql mysqli
 
-# Configure and install remaining PHP extensions
+# HARD FAIL if not installed
+RUN php -m | grep -i mysql
+
+# Install remaining extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         intl \
@@ -33,11 +37,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 
 RUN docker-php-ext-enable opcache
 
-# Install Imagick with basic retry fallback
-RUN pecl install imagick || pecl install imagick \
+# Install Imagick AFTER deps
+RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
-# Optional: set recommended PHP settings (can remove if not needed)
-RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini \
-    && echo "upload_max_filesize=50M" > /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size=50M" >> /usr/local/etc/php/conf.d/uploads.ini
+# Cleanup
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
