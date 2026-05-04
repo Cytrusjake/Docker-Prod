@@ -2,12 +2,10 @@ version: "3.9"
 
 services:
   php:
-    image: ghcr.io/cytrusjake/php-8_2:latest
-    
+    build: .
     volumes:
       - /var/www/html:/var/www/html
-      # Mount a single custom ini instead of overriding the whole directory
-      - /etc/tenant-php/custom.ini:/usr/local/etc/php/conf.d/zzz-custom.ini:ro
+      - /etc/tenant-php/conf.d:/usr/local/etc/php/conf.d:ro
     depends_on:
       - mariadb
       - redis
