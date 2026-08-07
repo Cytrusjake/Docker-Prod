@@ -4,7 +4,6 @@ services:
 
   php:
     build: .
-    container_name: php
 
     volumes:
       - /var/www/html:/var/www/html
@@ -18,10 +17,7 @@ services:
     restart: unless-stopped
 
   cron:
-    build:
-      context: ./cron
-
-    container_name: cron
+    build: .
 
     command: >
       sh -c "
@@ -40,8 +36,6 @@ services:
   nginx:
     build:
       context: ./nginx
-
-    container_name: nginx
 
     volumes:
       - /var/www/html:/var/www/html:ro
@@ -62,8 +56,6 @@ services:
     build:
       context: ./varnish
 
-    container_name: varnish
-
     depends_on:
       - nginx
 
@@ -74,7 +66,6 @@ services:
 
   mariadb:
     image: mariadb:10.11
-    container_name: mariadb
 
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -89,19 +80,16 @@ services:
 
   redis:
     image: redis:7
-    container_name: redis
 
     restart: unless-stopped
 
   memcached:
     image: memcached:latest
-    container_name: memcached
 
     restart: unless-stopped
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2
-    container_name: phpmyadmin
 
     depends_on:
       - mariadb

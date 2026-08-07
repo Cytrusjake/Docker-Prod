@@ -2,11 +2,13 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www/html
 
-# Force cache bust 
+# Force cache bust
 RUN echo "BUILD $(date)"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    cron \
+    docker.io \
     libicu-dev \
     libzip-dev \
     libpng-dev \
@@ -19,27 +21,33 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     unzip \
     git \
-    curl
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install MySQL extensions FIRST and separately
-RUN docker-php-ext-install pdo_mysql mysqli
+# Install MySQL extensions first
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mysqli
 
-# HARD FAIL if not installed
+# Verify MySQL extensions were installed
 RUN php -m | grep -i mysql
 
-# Install remaining extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+# Install remaining PHP extensions
+RUN docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
     && docker-php-ext-install \
         intl \
         zip \
         gd \
         opcache
 
+# Enable OPcache
 RUN docker-php-ext-enable opcache
 
-# Install Imagick AFTER deps
+# Install Imagick
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
-# Cleanup
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Default command for the PHP service
+CMD ["php-fpm"]
