@@ -8,7 +8,6 @@ RUN echo "BUILD $(date)"
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     cron \
-    docker.io \
     libicu-dev \
     libzip-dev \
     libpng-dev \
@@ -24,15 +23,15 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install MySQL extensions first
+# Install MySQL extensions FIRST
 RUN docker-php-ext-install \
     pdo_mysql \
     mysqli
 
-# Verify MySQL extensions were installed
+# Verify MySQL extensions
 RUN php -m | grep -i mysql
 
-# Install remaining PHP extensions
+# Configure and install remaining extensions
 RUN docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -49,5 +48,5 @@ RUN docker-php-ext-enable opcache
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
-# Default command for the PHP service
+# Start PHP-FPM by default
 CMD ["php-fpm"]
