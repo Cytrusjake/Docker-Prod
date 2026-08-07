@@ -90,7 +90,8 @@ services:
     restart: unless-stopped
 
   memcached:
-    image: memcached:latest
+    build:
+      context: ./memcached
 
     restart: unless-stopped
 
