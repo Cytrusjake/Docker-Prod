@@ -46,7 +46,7 @@ services:
     volumes:
       - /var/www/html:/var/www/html:ro
       - /etc/tenant-nginx/user-snippets:/etc/nginx/user-snippets
-
+      - /etc/tenant-nginx/conf.d:/etc/nginx/conf.d
     environment:
       PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required}
 
